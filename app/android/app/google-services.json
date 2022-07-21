@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "556325043232",
+    "project_id": "janken-project",
+    "storage_bucket": "janken-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556325043232:android:38b6a6ec4cb94a83a35045",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556325043232-nhnvmfb1monh87gcuokd0s3pdpf74q3p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSw1U1YPoABxk6zMe-2awFs5TKEKw9jQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556325043232-nhnvmfb1monh87gcuokd0s3pdpf74q3p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
