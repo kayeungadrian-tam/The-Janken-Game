@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/GamePage.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -16,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: GamePage(title: 'Game Page'),
+      home: GamePage(title: 'Player:  '),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
