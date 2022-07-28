@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:app/components/CardTemplate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app/components/Drawer.dart';
 
 class GamePage extends StatefulWidget {
   const GamePage({Key? key, required this.title}) : super(key: key);
@@ -23,15 +24,18 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   bool isActive = false;
-  int index = 0;
+  int roundIdx = 0;
+
   Random random = Random();
+  int index = 0;
+  int botIndex = 0;
   String userName = "Adrian";
   late List<String> tmpValue = [];
   String name = "";
 
   Stream<QuerySnapshot>? _usersStream;
-
   Stream<QuerySnapshot>? _roomsStream;
+  Stream<QuerySnapshot>? _eventsStream;
 
   final TextEditingController _textController = TextEditingController();
   CollectionReference reference = FirebaseFirestore.instance
@@ -43,9 +47,9 @@ class _GamePageState extends State<GamePage> {
   void initState() {
     super.initState();
     _initGame();
-    setState(() {
-      index = random.nextInt(3);
-    });
+    // setState(() {
+    //   index = random.nextInt(3);
+    // });
 
     _usersStream = FirebaseFirestore.instance
         .collection('Rooms')
@@ -53,7 +57,43 @@ class _GamePageState extends State<GamePage> {
         .collection("Players")
         .snapshots();
 
+    _eventsStream = FirebaseFirestore.instance
+        .collection('Rooms')
+        .doc("404")
+        .collection("Events")
+        .snapshots();
+
     _roomsStream = FirebaseFirestore.instance.collection("Rooms").snapshots();
+  }
+
+  void refresh() async {
+    setState(() {
+      index = random.nextInt(3);
+      botIndex = random.nextInt(3);
+      roundIdx += 1;
+    });
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc("404")
+        .collection("Players")
+        .doc("bot_id")
+        .update({"hand": botIndex});
+
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc("404")
+        .collection("Players")
+        .doc("Adrian_id")
+        .update({
+      "hand": index,
+    });
+
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc("404")
+        .collection("Events")
+        .doc()
+        .set({"round": roundIdx, "${userName}": index, "bot": botIndex});
   }
 
   void SwitchUser() {
@@ -64,11 +104,22 @@ class _GamePageState extends State<GamePage> {
         userName = "Adrian";
       }
       ;
-      // isActive = !isActive;
     });
   }
 
+  void _resetCollection() async {
+    var collection = FirebaseFirestore.instance
+        .collection('Rooms')
+        .doc("404")
+        .collection("Events");
+    var snapshots = await collection.get();
+    for (var doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+  }
+
   void _initGame() async {
+    _resetCollection();
     await FirebaseFirestore.instance
         .collection("Rooms")
         .doc("404")
@@ -77,6 +128,12 @@ class _GamePageState extends State<GamePage> {
         .set({
       "deck": [7, 7, 7]
     });
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc("404")
+        .collection("Events")
+        .doc()
+        .set({"round": roundIdx, "${userName}": index, "bot": botIndex});
   }
 
   void _createRoom() async {
@@ -113,8 +170,6 @@ class _GamePageState extends State<GamePage> {
               constraints: BoxConstraints(
                 maxHeight: double.infinity,
               ),
-              // width: 500,
-              // height: 250,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -132,14 +187,7 @@ class _GamePageState extends State<GamePage> {
                                 : CrossAxisAlignment.start,
                             children: [
                               Align(
-                                // alignment: data["name"] == userName
-                                // ? Alignment.topLeft
-                                // : Alignment.topRight,
                                 child: Row(
-                                  // mainAxisAlignment: data["name"] == userName
-                                  // ? MainAxisAlignment.start
-                                  // : MainAxisAlignment.end,
-                                  // crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     data["name"] == userName
                                         ? Row(children: [
@@ -179,9 +227,19 @@ class _GamePageState extends State<GamePage> {
     return Scaffold(
       // extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Center(child: Text(widget.title + userName)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: refresh,
+            ),
+            Center(child: Text(widget.title + userName)),
+          ],
+        ),
         backgroundColor: Colors.transparent,
       ),
+      drawer: Drawer(child: MyDrawer(stream: _usersStream)),
       body: DocsFromFirestore(),
       floatingActionButton:
           ElevatedButton(onPressed: SwitchUser, child: Text("switch")),

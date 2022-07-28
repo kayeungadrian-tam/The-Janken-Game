@@ -20,9 +20,9 @@ class _PlayingCardState extends State<PlayingCard> {
     Colors.lightBlueAccent
   ];
   final images = [
-    "https://static.thenounproject.com/png/88666-200.png",
     "https://static.thenounproject.com/png/477912-200.png",
     "https://static.thenounproject.com/png/88661-200.png",
+    "https://static.thenounproject.com/png/88666-200.png",
   ];
 
   @override
@@ -37,7 +37,7 @@ class _PlayingCardState extends State<PlayingCard> {
             fill: Fill
                 .fillBack, // Fill the back side of the card to make in the same size as the front.
             direction: FlipDirection.HORIZONTAL, // default
-            front: Container(
+            back: Container(
               child: SizedBox(
                   height: 250,
                   width: 200,
@@ -54,10 +54,10 @@ class _PlayingCardState extends State<PlayingCard> {
                     ),
                   )),
             ),
-            back: Container(
+            front: Container(
               child: SizedBox(
                 height: 250,
-                width: 200,
+                width: 190,
                 child: CardBack(image_path: "assets/images/card_back.png"),
               ),
             ),
