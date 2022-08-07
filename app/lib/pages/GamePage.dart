@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:app/components/CardTemplate.dart';
@@ -26,6 +28,8 @@ class _GamePageState extends State<GamePage> {
   bool isActive = false;
   int roundIdx = 0;
 
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
   Random random = Random();
   int index = 0;
   int botIndex = 0;
@@ -38,10 +42,10 @@ class _GamePageState extends State<GamePage> {
   Stream<QuerySnapshot>? _eventsStream;
 
   final TextEditingController _textController = TextEditingController();
-  CollectionReference reference = FirebaseFirestore.instance
-      .collection('Rooms')
-      .doc("404")
-      .collection("Players");
+  // CollectionReference reference = FirebaseFirestore.instance
+  //     .collection('Rooms')
+  //     .doc(widget.title)
+  //     .collection("Players");
 
   @override
   void initState() {
@@ -53,13 +57,13 @@ class _GamePageState extends State<GamePage> {
 
     _usersStream = FirebaseFirestore.instance
         .collection('Rooms')
-        .doc("404")
+        .doc(widget.title)
         .collection("Players")
         .snapshots();
 
     _eventsStream = FirebaseFirestore.instance
         .collection('Rooms')
-        .doc("404")
+        .doc(widget.title)
         .collection("Events")
         .snapshots();
 
@@ -74,14 +78,14 @@ class _GamePageState extends State<GamePage> {
     });
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc("${widget.title}")
         .collection("Players")
         .doc("bot_id")
         .update({"hand": botIndex});
 
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .collection("Players")
         .doc("Adrian_id")
         .update({
@@ -90,9 +94,9 @@ class _GamePageState extends State<GamePage> {
 
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .collection("Events")
-        .doc()
+        .doc('${DateTime.now().millisecondsSinceEpoch}')
         .set({"round": roundIdx, "${userName}": index, "bot": botIndex});
   }
 
@@ -110,7 +114,7 @@ class _GamePageState extends State<GamePage> {
   void _resetCollection() async {
     var collection = FirebaseFirestore.instance
         .collection('Rooms')
-        .doc("404")
+        .doc(widget.title)
         .collection("Events");
     var snapshots = await collection.get();
     for (var doc in snapshots.docs) {
@@ -122,7 +126,7 @@ class _GamePageState extends State<GamePage> {
     _resetCollection();
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .collection("Deck")
         .doc(userName)
         .set({
@@ -130,20 +134,32 @@ class _GamePageState extends State<GamePage> {
     });
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .collection("Events")
-        .doc()
+        .doc('${DateTime.now().millisecondsSinceEpoch}')
         .set({"round": roundIdx, "${userName}": index, "bot": botIndex});
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc(widget.title)
+        .collection("Players")
+        .doc("bot_id")
+        .set({"name": "bot", "hand": 0});
+    await FirebaseFirestore.instance
+        .collection("Rooms")
+        .doc(widget.title)
+        .collection("Players")
+        .doc("Adrian_id")
+        .set({"name": "Adrian", "hand": 0});
   }
 
   void _createRoom() async {
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .set({"createdAt": DateTime.now().millisecondsSinceEpoch});
     await FirebaseFirestore.instance
         .collection("Rooms")
-        .doc("404")
+        .doc(widget.title)
         .collection("Players")
         .doc("${userName}_id")
         .set({"name": "${userName}"});
@@ -185,8 +201,11 @@ class _GamePageState extends State<GamePage> {
                             crossAxisAlignment: data["name"] == userName
                                 ? CrossAxisAlignment.end
                                 : CrossAxisAlignment.start,
-                            children: [
-                              Align(
+                            children: <Widget>[
+                              Flexible(
+                                fit: FlexFit.loose,
+                                // child: SizedBox(
+                                // height: 400,
                                 child: Row(
                                   children: [
                                     data["name"] == userName
@@ -207,6 +226,7 @@ class _GamePageState extends State<GamePage> {
                                             ),
                                           ]),
                                   ],
+                                  // ),
                                 ),
                               ),
                             ],
@@ -222,6 +242,10 @@ class _GamePageState extends State<GamePage> {
         });
   }
 
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,7 +258,10 @@ class _GamePageState extends State<GamePage> {
               icon: Icon(Icons.add),
               onPressed: refresh,
             ),
-            Center(child: Text(widget.title + userName)),
+            Center(
+                child: Text(widget.title +
+                    "${_firebaseAuth.currentUser?.displayName}")),
+            IconButton(onPressed: _signOut, icon: Icon(Icons.logout))
           ],
         ),
         backgroundColor: Colors.transparent,
