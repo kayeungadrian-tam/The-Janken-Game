@@ -23,12 +23,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: Colors.amberAccent,
+        // primaryColor: Colors.amberAccent,
         // hintColor: Colors.amberAccent,
         // indicatorColor: Colors.amberAccent,
         // shadowColor: Colors.amberAccent,
         // highlightColor: Colors.amberAccent,
-        splashColor: Colors.transparent,
+        splashColor: Colors.amberAccent,
       ),
       home: AuthGate(),
     );

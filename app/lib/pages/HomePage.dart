@@ -1,3 +1,5 @@
+import 'package:app/components/Button.dart';
+import 'package:app/components/RoomList.dart';
 import 'package:app/pages/GamePage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 
 import "package:app/constants/lotties.dart";
+import 'package:app/components/Drawer.dart';
 
 const inputStyle = InputDecoration(
   contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
@@ -40,39 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => GamePage(title: roomNumber)));
   }
 
-  Widget Tite(String room, String host) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.red),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ListTile(
-        title: Text('Room ${room}'),
-        subtitle: Text('by ${host}'),
-        onTap: _enter,
-      ),
-    );
-  }
-
-  Widget Rooms() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _roomsStream,
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) return Text('Loading...');
-        return Container(
-          height: 200,
-          child: ListView(
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              return roomNumber == document.id
-                  ? Tite('${document.id}', '${document["host"]}')
-                  : Text(roomNumber);
-            }).toList(),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -98,15 +68,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _addRoom() async {
+    if (roomNumber != "")
+      await FirebaseFirestore.instance
+          .collection("Rooms")
+          .doc("${roomNumber}")
+          .set({
+        "host": "${_firebaseAuth.currentUser?.displayName}",
+        "createAt": DateTime.now().toUtc()
+      });
+    else
+      print("ELSE");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-            onTap: () {/* Write listener code here */},
-            child: Icon(
-              Icons.menu, // add custom icons also
-            )),
+        // leading: GestureDetector(
+        //     onTap: () {/* Write listener code here */},
+        //     child: Icon(
+        //       Icons.menu, // add custom icons also
+        //     )),
         actions: <Widget>[
           Padding(
               padding: EdgeInsets.only(right: 20.0),
@@ -119,57 +102,50 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
       ),
       // backgroundColor: Colors.grey[200],
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Text('You have logged in Successfuly'),
-            SizedBox(height: 50),
-            Container(
-              height: 60,
-              width: 300,
-              child: TextFormField(
-                  style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    roomNumber = value;
-                  },
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Please enter your email";
-                    } else {
-                      print("HERE");
-                    }
-                  },
-                  textAlign: TextAlign.center,
-                  decoration: inputStyle.copyWith(
-                    hintText: "Room number",
-                    hintStyle: hintstyle,
-                    prefixIcon: const Icon(
-                      Icons.door_front_door,
-                      color: Colors.white,
-                    ),
-                  )),
-            ),
-            const SizedBox(
-              height: 100,
-            ),
-            Rooms(),
-            ClipOval(
-              child: Material(
-                child: InkWell(
-                    onTap: _pressed,
-                    child: isLoading
-                        ? Lottie.network(
-                            "https://assets3.lottiefiles.com/packages/lf20_xgxirjr9.json",
-                            height: 200,
-                            frameRate: FrameRate(60),
-                            width: 200)
-                        : Lottie.asset(search,
-                            height: 200, frameRate: FrameRate(60), width: 200)),
+      drawer: Drawer(child: MyDrawer(stream: _roomsStream)),
+
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RoomList(
+                  stream: _roomsStream,
+                  userName: "${_firebaseAuth.currentUser?.displayName}"),
+              Divider(),
+              Container(
+                // height: 60,
+                width: 300,
+                child: TextFormField(
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      roomNumber = value;
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return "Please enter your email";
+                      } else {
+                        print("HERE");
+                      }
+                    },
+                    textAlign: TextAlign.center,
+                    decoration: inputStyle.copyWith(
+                      hintText: "Room number",
+                      hintStyle: hintstyle,
+                      prefixIcon: const Icon(
+                        Icons.door_front_door,
+                        color: Colors.white,
+                      ),
+                    )),
               ),
-            )
-          ],
+              MypButton(ontapp: _addRoom, title: "Add"),
+              const SizedBox(
+                height: 50,
+              )
+            ],
+          ),
         ),
       ),
     );
