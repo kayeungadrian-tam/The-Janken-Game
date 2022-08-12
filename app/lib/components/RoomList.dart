@@ -1,3 +1,4 @@
+import 'package:app/pages/GamePage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -22,6 +23,12 @@ class _RoomListState extends State<RoomList> {
         .collection("Rooms")
         .doc("${roomNumber}")
         .delete();
+  }
+
+  Future<void> _enter(roomNumber) async {
+    print("HEORHE");
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => GamePage(title: roomNumber)));
   }
 
   @override
@@ -63,7 +70,7 @@ class _RoomListState extends State<RoomList> {
                         width: 20,
                       ),
                       ElevatedButton(
-                        onPressed: null,
+                        onPressed: () => _enter("${doc.id}"),
                         child: const Text(
                           "Join",
                           style: TextStyle(color: Colors.white),
