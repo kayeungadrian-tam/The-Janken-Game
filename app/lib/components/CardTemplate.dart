@@ -1,3 +1,4 @@
+import 'package:app/constants/CardConstant.dart';
 import 'package:flutter/material.dart';
 import 'package:app/components/CardBack.dart';
 import 'package:flip_card/flip_card.dart';
@@ -14,17 +15,6 @@ class PlayingCard extends StatefulWidget {
 }
 
 class _PlayingCardState extends State<PlayingCard> {
-  final colors = [
-    Colors.amberAccent,
-    Colors.pinkAccent,
-    Colors.lightBlueAccent
-  ];
-  final images = [
-    "https://static.thenounproject.com/png/477912-200.png",
-    "https://static.thenounproject.com/png/88661-200.png",
-    "https://static.thenounproject.com/png/88666-200.png",
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Transform(
